@@ -1,4 +1,4 @@
 #!/bin/bash
 set -ex
 
-minipro -p AT28C256 -w rom.bin
+minipro -p AT28C256 -w a.out
