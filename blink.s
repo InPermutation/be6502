@@ -48,9 +48,13 @@ reset:
   lda #0         ; Clear RS/RW/E bits
   sta PORTA
 
-; Write data:
-  lda #"H"
+  ldx #0
+
+write_str:
+  lda str,x
   sta PORTB
+
+  beq loop       ; exit loop if str[x] is zero
 
   lda #RS        ; Set RS
   sta PORTA
@@ -58,12 +62,18 @@ reset:
   lda #(RS | E)  ; Send data to display
   sta PORTA
 
-  lda #RS         ; Clear RS/RW/E bits
+  lda #RS         ; Clear E bit
   sta PORTA
+
+  inx
+  jmp write_str
 
 
 loop:
   jmp loop
+
+str:
+  .asciiz "Hello, loop!"
 
   .org $fffc
   .word reset
