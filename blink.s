@@ -31,6 +31,10 @@ reset:
   lda #%00000110 ; I/D: move direction inc/dec, S: display shift?
   jsr lcd_instruction
 
+; Clear display
+  lda #%00000001 ; Clear display
+  jsr lcd_instruction
+
   ldx #0
 
 write_str:
