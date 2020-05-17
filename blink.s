@@ -95,7 +95,9 @@ lcd_wait_loop:
 
 
 str:
-  .asciiz "Hello, 1MHz!"
+  .asciiz "Hello from 6502!                        jacob.jkrall.net"
+  ;        12345678901234567890123456789012345678901234567890123456789012345678901234567890
+  ;                        xxxxxxxxxxxxxxxxxxxxxxxx                xxxxxxxxxxxxxxxxxxxxxxxx
 
   .org $fffc
   .word reset
