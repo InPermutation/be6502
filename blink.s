@@ -48,6 +48,8 @@ loop:
   jmp loop
 
 lcd_instruction:
+  jsr lcd_wait
+
   sta PORTB
   lda #0         ; Clear RS/RW/E bits
   sta PORTA
@@ -58,6 +60,8 @@ lcd_instruction:
   rts
 
 print_char:
+  jsr lcd_wait
+
   sta PORTB
   lda #RS        ; Set RS
   sta PORTA
@@ -67,8 +71,31 @@ print_char:
   sta PORTA
   rts
 
+lcd_wait:
+  pha
+
+  lda #%00000000 ; Port B is input
+  sta DDRB
+
+lcd_wait_loop:
+  lda #RW
+  sta PORTA
+  lda #(RW | E)
+  sta PORTA
+  lda PORTB
+  and #%10000000 ; check busy flag
+  bne lcd_wait_loop
+
+  lda #RW
+  sta PORTA
+  lda #%11111111 ; Restore port B to output
+  sta DDRB
+  pla
+  rts
+
+
 str:
-  .asciiz "Hello, RAM!"
+  .asciiz "Hello, 1MHz!"
 
   .org $fffc
   .word reset
