@@ -2,6 +2,9 @@ PORTB = $6000
 PORTA = $6001
 DDRB  = $6002
 DDRA  = $6003
+DDRA_NORMAL = %11100000
+ALL_IN = %00000000
+ALL_OUT = %11111111
 
 E = %10000000
 RW = %01000000
@@ -13,10 +16,10 @@ reset:
   ldx #$ff
   txs
 
-  lda #%11111111 ; Set all pins on port B to output
+  lda #ALL_OUT ; Set all pins on port B to output
   sta DDRB
 
-  lda #%11100000 ; Set top 3 pins on port A to output
+  lda #DDRA_NORMAL ; Set top 3 pins on port A to output
   sta DDRA
 
 ; Set mode
@@ -74,7 +77,7 @@ print_char:
 lcd_wait:
   pha
 
-  lda #%00000000 ; Port B is input
+  lda #ALL_IN ; Port B is input
   sta DDRB
 
 lcd_wait_loop:
@@ -88,7 +91,7 @@ lcd_wait_loop:
 
   lda #RW
   sta PORTA
-  lda #%11111111 ; Restore port B to output
+  lda #ALL_OUT ; Restore port B to output
   sta DDRB
   pla
   rts
