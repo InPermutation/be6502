@@ -3,13 +3,8 @@ PORTA = $6001
 DDRB  = $6002
 DDRA  = $6003
 DDRA_NORMAL = %11100000
-DDRA_LOW_PA4 = %11110000
-DDRA_LOW_PA3 = %11101000
 ALL_IN = %00000000
 ALL_OUT = %11111111
-
-LDU = $00 ; Zero page baby
-RBA = $01
 
 E = %10000000
 RW = %01000000
@@ -43,14 +38,16 @@ reset:
   lda #%00000001 ; Clear display
   jsr lcd_instruction
 
-  ldx #0
-
-write_str:
-  lda str,x
-  beq loop       ; exit loop if str[x] is zero
+  lda #$0b
+  jsr print_hex_byte
+  lda #$20
   jsr print_char
-  inx
-  jmp write_str
+  lda #$c3
+  jsr print_hex_byte
+  lda #$2e
+  jsr print_char
+  lda #$fa
+  jsr print_hex_byte
 
 loop:
   jmp loop
@@ -65,6 +62,27 @@ lcd_instruction:
   sta PORTA
   lda #0         ; Clear RS/RW/E bits
   sta PORTA
+  rts
+
+print_hex_byte:
+  phx
+  pha
+  pha
+  lsr
+  lsr
+  lsr
+  lsr
+  and #$0f
+  tax
+  lda s_hex,x
+  jsr print_char
+  pla
+  and #$0f
+  tax
+  lda s_hex,x
+  jsr print_char
+  pla
+  plx
   rts
 
 print_char:
@@ -101,11 +119,8 @@ lcd_wait_loop:
   pla
   rts
 
-
-str:
-  .asciiz "Hello from 6502!   1Maybe line 3?      3jacob.jkrall.net   2Guessing line 4?   4"
-  ;        12345678901234567890123456789012345678901234567890123456789012345678901234567890
-  ;                        xxxxxxxxxxxxxxxxxxxxxxxx                xxxxxxxxxxxxxxxxxxxxxxxx
+s_hex:
+  .asciiz "0123456789ABCDEF"
 
 irq_brk:
   rti
@@ -113,6 +128,7 @@ irq_brk:
 nmi:
   rti
 
+; Vector locations
   .org $fffa
   .word nmi
   .word reset
