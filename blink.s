@@ -6,6 +6,11 @@ DDRA_NORMAL = %11100000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
+KEY_BUF = $0200      ; use Page 2 as circular buffer
+KEY_BUF_X = $00      ; producer index into KEY_BUF
+KEY_READ_X = $01     ; consumer index into KEY_BUF
+KEY_DATA = %00001000 ; which bit do we read
+
 E = %10000000
 RW = %01000000
 RS = %00100000
@@ -16,11 +21,16 @@ reset:
   ldx #$ff
   txs
 
+  stz KEY_BUF_X
+  stz KEY_READ_X
+
   lda #ALL_OUT ; Set all pins on port B to output
   sta DDRB
 
   lda #DDRA_NORMAL ; Set top 3 pins on port A to output
   sta DDRA
+
+  cli
 
 ; Set mode
   lda #%00111000 ; Set 8-bit mode; 2-line display 5x8 font
@@ -38,18 +48,39 @@ reset:
   lda #%00000001 ; Clear display
   jsr lcd_instruction
 
-  lda #$0b
-  jsr print_hex_byte
-  lda #$20
-  jsr print_char
-  lda #$c3
-  jsr print_hex_byte
-  lda #$2e
-  jsr print_char
-  lda #$fa
-  jsr print_hex_byte
+  ldy #0
 
 loop:
+  lda #%00000010 ; Return home
+  jsr lcd_instruction
+
+  lda KEY_BUF_X
+  jsr print_hex_byte
+
+  lda #$20
+  jsr print_char
+
+  lda KEY_READ_X
+  jsr print_hex_byte
+
+  lda #$20
+  jsr print_char
+
+  lda #"S"
+  jsr print_char
+
+  php
+  pla
+  jsr print_hex_byte
+
+  lda #" "
+  jsr print_char
+
+  tya
+  iny
+  jsr print_hex_byte
+
+
   jmp loop
 
 lcd_instruction:
@@ -123,9 +154,20 @@ s_hex:
   .asciiz "0123456789ABCDEF"
 
 irq_brk:
+  phx
+  ldx KEY_BUF_X
+  inx
+  stx KEY_BUF_X
+  plx
   rti
 
 nmi:
+  phx
+  ldx KEY_READ_X
+  inx
+  stx KEY_READ_X
+  plx
+  rti
   rti
 
 ; Vector locations
