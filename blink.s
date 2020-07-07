@@ -80,6 +80,12 @@ loop:
   iny
   jsr print_hex_byte
 
+  lda KEY_READ_X
+  cmp KEY_BUF_X
+  beq loop
+
+  ina
+  sta KEY_READ_X
 
   jmp loop
 
@@ -154,18 +160,13 @@ s_hex:
   .asciiz "0123456789ABCDEF"
 
 irq_brk:
-  phx
-  ldx KEY_BUF_X
-  inx
-  stx KEY_BUF_X
-  plx
   rti
 
 nmi:
   phx
-  ldx KEY_READ_X
+  ldx KEY_BUF_X
   inx
-  stx KEY_READ_X
+  stx KEY_BUF_X
   plx
   rti
   rti
