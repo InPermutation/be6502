@@ -1,20 +1,27 @@
+; VIA ports
 PORTB = $6000
 PORTA = $6001
 DDRB  = $6002
 DDRA  = $6003
+
+; VIA masks
 DDRA_NORMAL = %11100000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
-KEY_DATA = %00001000 ; which bit do we read from PORTA
+KEY_DATA = %00001000 ; which bit of PORTA do we read PS/2 bits from?
 
-; page 0
+; Zero page variable locations
 KEY_BUF_X = $00      ; producer index into KEY_BUF
 KEY_READ_X = $01     ; consumer index into KEY_BUF
-; page 1
+PS2_BIT_NUMBER = $02 ; which bit will we read next?
+
+
+; 1-page is the stack
 THE_STACK = $0100
-; page 2
-KEY_BUF = $0200      ; use Page 2 as circular buffer
+
+; 2-page is a circular buffer of the raw PS/2 bits (#0 or #1)
+KEY_BUF = $0200      ; use Page 2 as circular buffer of PS/2 bits
 
 E = %10000000
 RW = %01000000
@@ -28,6 +35,44 @@ reset:
 
   stz KEY_BUF_X
   stz KEY_READ_X
+  stz PS2_BIT_NUMBER
+
+  ldx #0
+  lda #0 ; start bit
+  sta KEY_BUF,x
+  inx
+  lda #0 ; data0
+  sta KEY_BUF,x
+  inx
+  lda #1 ; data1
+  sta KEY_BUF,x
+  inx
+  lda #0 ; data2
+  sta KEY_BUF,x
+  inx
+  lda #0 ; data3
+  sta KEY_BUF,x
+  inx
+  lda #1 ; data4
+  sta KEY_BUF,x
+  inx
+  lda #0 ; data5
+  sta KEY_BUF,x
+  inx
+  lda #1 ; data6
+  sta KEY_BUF,x
+  inx
+  lda #1 ; data7
+  sta KEY_BUF,x
+  inx
+  lda #1 ; parity bit
+  sta KEY_BUF,x
+  inx
+  lda #1 ; stop bit
+  sta KEY_BUF,x
+  inx
+  stx KEY_BUF_X
+  ldx #0
 
   lda #ALL_OUT ; Set all pins on port B to output
   sta DDRB
@@ -56,15 +101,22 @@ reset:
   ldy #0
 
 loop:
-  jsr print_debug_info
+;  jsr print_debug_info
 
+ps2_check_bit:
   lda KEY_READ_X
   cmp KEY_BUF_X
-  beq loop
+  beq die
+
+  ldx KEY_READ_X
+  lda KEY_BUF,x
+  jsr print_hex_byte
 
   inc KEY_READ_X
+  jmp ps2_check_bit
 
-  jmp loop
+die:
+  stp
 
 lcd_instruction:
   pha
