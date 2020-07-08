@@ -255,6 +255,10 @@ nmi:
   ; Now we've captured the bit, we have a few more cycles to store it.
   ; Because we only have a few cycles, the main state machine will need to be in
   ; `process_one_ps2_bit` in the main loop.
+  and #KEY_DATA
+  beq _nmi_normalized
+  lda #1
+_nmi_normalized:
   phx
   ldx KEY_BUF_X
   sta KEY_BUF,x
