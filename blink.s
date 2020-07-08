@@ -106,17 +106,43 @@ loop:
 ps2_check_bit:
   lda KEY_READ_X
   cmp KEY_BUF_X
-  beq die
+  beq loop
 
+  lda PS2_BIT_NUMBER
+  cmp #0
+  beq ps2_start_bit
+  cmp #9
+  beq ps2_parity_bit
+  cmp #10
+  beq ps2_stop_bit
+
+ps2_data_bit:
   ldx KEY_READ_X
   lda KEY_BUF,x
   jsr print_hex_byte
 
+next_ps2_bit:
+  inc PS2_BIT_NUMBER
+inc_key_read_x:
   inc KEY_READ_X
+
   jmp ps2_check_bit
 
-die:
-  stp
+
+ps2_start_bit:
+  lda #"S"
+  jsr print_char
+  jmp next_ps2_bit
+ps2_parity_bit:
+  lda #"P"
+  jsr print_char
+  jmp next_ps2_bit
+
+ps2_stop_bit:
+  lda #"!"
+  jsr print_char
+  stz PS2_BIT_NUMBER
+  jmp inc_key_read_x
 
 lcd_instruction:
   pha
