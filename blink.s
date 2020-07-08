@@ -103,7 +103,6 @@ reset:
   ldy #0
 
 loop:
-;  jsr print_debug_info
   lda #%00000010 ; Return home
   jsr lcd_instruction
 
@@ -170,39 +169,6 @@ lcd_instruction:
   sta PORTA
   lda #0         ; Clear RS/RW/E bits
   sta PORTA
-  pla
-  rts
-
-print_debug_info:
-  pha
-  lda #%00000010 ; Return home
-  jsr lcd_instruction
-
-  lda KEY_BUF_X
-  jsr print_hex_byte
-
-  lda #$20
-  jsr print_char
-
-  lda KEY_READ_X
-  jsr print_hex_byte
-
-  lda #$20
-  jsr print_char
-
-  lda #"S"
-  jsr print_char
-
-  php
-  pla
-  jsr print_hex_byte
-
-  lda #" "
-  jsr print_char
-
-  tya
-  iny
-  jsr print_hex_byte
   pla
   rts
 
