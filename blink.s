@@ -111,6 +111,7 @@ ps2_check_bit:
   cmp KEY_BUF_X
   beq loop
 
+process_one_ps2_bit:
   lda PS2_BIT_NUMBER
   cmp #0
   beq ps2_start_bit
@@ -234,7 +235,32 @@ irq_brk:
   rti
 
 nmi:
+  ; The PS/2 keyboard protocol is clocked by the keyboard itself
+  ; Tie the CLOCK line to the NMI with a pull-up resistor, and the DATA line
+  ; to the VIA, PORTA, bit 4.
+  ; PS/2 clock speed is expected to be somewhere between 10kHz-16.7kHz
+  ; If our CPU is running at 1MHz, that gives us 59.88 cycles per bit.
+  ; The data is only valid for the first half of those, and we really
+  ; should be reading in the middle of the clock cycle for accuracy's sake.
+  ; That means we have about 15 cycles to read PORTA,
+  ; and another few dozen to get outta here.
+  ; The WDC 65C02 supposedly takes 6 cycles to process an interrupt,
+  ; and will only process an interrupt at the beginning of an instruction,
+  ; so we're already 8-14 cycles in. Hurry!!
+
+  pha
+  lda PORTA
+
+  ; Now we've captured the bit, we have a few more cycles to store it.
+  ; Because we only have a few cycles, the main state machine will need to be in
+  ; `process_one_ps2_bit` in the main loop.
+  phx
+  ldx KEY_BUF_X
+  sta KEY_BUF,x
   inc KEY_BUF_X
+
+  plx
+  pla
   rti
 
 ; Vector locations
