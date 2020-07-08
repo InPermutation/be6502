@@ -15,6 +15,7 @@ KEY_DATA = %00001000 ; which bit of PORTA do we read PS/2 bits from?
 KEY_BUF_X = $00      ; producer index into KEY_BUF
 KEY_READ_X = $01     ; consumer index into KEY_BUF
 PS2_BIT_NUMBER = $02 ; which bit will we read next?
+PS2_NEXT_BYTE = $03  ; storage to decode PS/2 bits into bytes
 
 
 ; 1-page is the stack
@@ -36,6 +37,7 @@ reset:
   stz KEY_BUF_X
   stz KEY_READ_X
   stz PS2_BIT_NUMBER
+  stz PS2_NEXT_BYTE
 
   ldx #0
   lda #0 ; start bit
@@ -102,6 +104,8 @@ reset:
 
 loop:
 ;  jsr print_debug_info
+  lda #%00000010 ; Return home
+  jsr lcd_instruction
 
 ps2_check_bit:
   lda KEY_READ_X
@@ -120,6 +124,13 @@ ps2_data_bit:
   ldx KEY_READ_X
   lda KEY_BUF,x
   jsr print_hex_byte
+
+  lda PS2_NEXT_BYTE
+  rol
+  and #$FE
+  ora KEY_BUF,x
+  sta PS2_NEXT_BYTE
+
 
 next_ps2_bit:
   inc PS2_BIT_NUMBER
@@ -141,6 +152,10 @@ ps2_parity_bit:
 ps2_stop_bit:
   lda #"!"
   jsr print_char
+  lda #"="
+  jsr print_char
+  lda PS2_NEXT_BYTE
+  jsr print_hex_byte
   stz PS2_BIT_NUMBER
   jmp inc_key_read_x
 
