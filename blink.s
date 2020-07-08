@@ -6,10 +6,15 @@ DDRA_NORMAL = %11100000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
-KEY_BUF = $0200      ; use Page 2 as circular buffer
+KEY_DATA = %00001000 ; which bit do we read from PORTA
+
+; page 0
 KEY_BUF_X = $00      ; producer index into KEY_BUF
 KEY_READ_X = $01     ; consumer index into KEY_BUF
-KEY_DATA = %00001000 ; which bit do we read
+; page 1
+THE_STACK = $0100
+; page 2
+KEY_BUF = $0200      ; use Page 2 as circular buffer
 
 E = %10000000
 RW = %01000000
@@ -51,6 +56,32 @@ reset:
   ldy #0
 
 loop:
+  jsr print_debug_info
+
+  lda KEY_READ_X
+  cmp KEY_BUF_X
+  beq loop
+
+  inc KEY_READ_X
+
+  jmp loop
+
+lcd_instruction:
+  pha
+  jsr lcd_wait
+
+  sta PORTB
+  lda #0         ; Clear RS/RW/E bits
+  sta PORTA
+  lda #E         ; Set E bit to enable display
+  sta PORTA
+  lda #0         ; Clear RS/RW/E bits
+  sta PORTA
+  pla
+  rts
+
+print_debug_info:
+  pha
   lda #%00000010 ; Return home
   jsr lcd_instruction
 
@@ -79,26 +110,7 @@ loop:
   tya
   iny
   jsr print_hex_byte
-
-  lda KEY_READ_X
-  cmp KEY_BUF_X
-  beq loop
-
-  ina
-  sta KEY_READ_X
-
-  jmp loop
-
-lcd_instruction:
-  jsr lcd_wait
-
-  sta PORTB
-  lda #0         ; Clear RS/RW/E bits
-  sta PORTA
-  lda #E         ; Set E bit to enable display
-  sta PORTA
-  lda #0         ; Clear RS/RW/E bits
-  sta PORTA
+  pla
   rts
 
 print_hex_byte:
@@ -163,12 +175,7 @@ irq_brk:
   rti
 
 nmi:
-  phx
-  ldx KEY_BUF_X
-  inx
-  stx KEY_BUF_X
-  plx
-  rti
+  inc KEY_BUF_X
   rti
 
 ; Vector locations
