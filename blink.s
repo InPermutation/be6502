@@ -157,7 +157,8 @@ ps2_stop_bit:
   lda PS2_NEXT_BYTE
   jsr print_hex_byte
   stz PS2_BIT_NUMBER
-  jmp inc_key_read_x
+  inc KEY_READ_X
+  jmp loop
 
 lcd_instruction:
   pha
