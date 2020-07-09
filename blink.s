@@ -46,7 +46,7 @@ reset:
   lda #0 ; data0
   sta KEY_BUF,x
   inx
-  lda #1 ; data1
+  lda #$80 ; data1
   sta KEY_BUF,x
   inx
   lda #0 ; data2
@@ -55,22 +55,22 @@ reset:
   lda #0 ; data3
   sta KEY_BUF,x
   inx
-  lda #1 ; data4
+  lda #$80 ; data4
   sta KEY_BUF,x
   inx
   lda #0 ; data5
   sta KEY_BUF,x
   inx
-  lda #1 ; data6
+  lda #$80 ; data6
   sta KEY_BUF,x
   inx
-  lda #1 ; data7
+  lda #$80 ; data7
   sta KEY_BUF,x
   inx
-  lda #1 ; parity bit
+  lda #$80 ; parity bit
   sta KEY_BUF,x
   inx
-  lda #1 ; stop bit
+  lda #$80 ; stop bit
   sta KEY_BUF,x
   inx
   stx KEY_BUF_X
@@ -126,8 +126,8 @@ ps2_data_bit:
   jsr print_hex_byte
 
   lda PS2_NEXT_BYTE
-  rol
-  and #$FE
+  ror
+  and #$7F
   ora KEY_BUF,x
   sta PS2_NEXT_BYTE
 
@@ -257,7 +257,7 @@ nmi:
   ; `process_one_ps2_bit` in the main loop.
   and #KEY_DATA
   beq _nmi_normalized
-  lda #1
+  lda #$80
 _nmi_normalized:
   phx
   ldx KEY_BUF_X
