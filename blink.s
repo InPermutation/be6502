@@ -66,8 +66,6 @@ reset:
   ldy #0
 
 loop:
-  lda #%00000010 ; Return home
-  jsr lcd_instruction
 
 ps2_check_bit:
   lda KEY_READ_X
@@ -85,9 +83,6 @@ process_one_ps2_bit:
 
 ps2_data_bit:
   ldx KEY_READ_X
-  lda KEY_BUF,x
-  jsr print_hex_byte
-
   lda PS2_NEXT_BYTE
   ror
   and #$7F
@@ -104,19 +99,11 @@ inc_key_read_x:
 
 
 ps2_start_bit:
-  lda #"S"
-  jsr print_char
   jmp next_ps2_bit
 ps2_parity_bit:
-  lda #"P"
-  jsr print_char
   jmp next_ps2_bit
 
 ps2_stop_bit:
-  lda #"!"
-  jsr print_char
-  lda #"="
-  jsr print_char
   lda PS2_NEXT_BYTE
   jsr print_hex_byte
   stz PS2_BIT_NUMBER
