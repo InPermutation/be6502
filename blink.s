@@ -39,43 +39,6 @@ reset:
   stz PS2_BIT_NUMBER
   stz PS2_NEXT_BYTE
 
-  ldx #0
-  lda #0 ; start bit
-  sta KEY_BUF,x
-  inx
-  lda #0 ; data0
-  sta KEY_BUF,x
-  inx
-  lda #$80 ; data1
-  sta KEY_BUF,x
-  inx
-  lda #0 ; data2
-  sta KEY_BUF,x
-  inx
-  lda #0 ; data3
-  sta KEY_BUF,x
-  inx
-  lda #$80 ; data4
-  sta KEY_BUF,x
-  inx
-  lda #0 ; data5
-  sta KEY_BUF,x
-  inx
-  lda #$80 ; data6
-  sta KEY_BUF,x
-  inx
-  lda #$80 ; data7
-  sta KEY_BUF,x
-  inx
-  lda #$80 ; parity bit
-  sta KEY_BUF,x
-  inx
-  lda #$80 ; stop bit
-  sta KEY_BUF,x
-  inx
-  stx KEY_BUF_X
-  ldx #0
-
   lda #ALL_OUT ; Set all pins on port B to output
   sta DDRB
 
