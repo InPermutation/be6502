@@ -9,7 +9,7 @@ DDRA_NORMAL = %11100000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
-KEY_DATA = %00001000 ; which bit of PORTA do we read PS/2 bits from?
+KEY_DATA = %00000001 ; which bit of PORTA do we read PS/2 bits from?
 
 ; Zero page variable locations
 KEY_BUF_X = $00      ; producer index into KEY_BUF
@@ -188,7 +188,7 @@ irq_brk:
 nmi:
   ; The PS/2 keyboard protocol is clocked by the keyboard itself
   ; Tie the CLOCK line to the NMI with a pull-up resistor, and the DATA line
-  ; to the VIA, PORTA, bit 4.
+  ; to the VIA, PORTA, bit 0.
   ; PS/2 clock speed is expected to be somewhere between 10kHz-16.7kHz
   ; If our CPU is running at 1MHz, that gives us 59.88 cycles per bit.
   ; The data is only valid for the first half of those, and we really
