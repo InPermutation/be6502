@@ -206,9 +206,9 @@ nmi:
   ; Because we only have a few cycles, the main state machine will need to be in
   ; `process_one_ps2_bit` in the main loop.
   and #KEY_DATA
-  beq _nmi_normalized
-  lda #$80
-_nmi_normalized:
+  clc
+  ror
+  ror
   phx
   ldx KEY_BUF_X
   sta KEY_BUF,x
