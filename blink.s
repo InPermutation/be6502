@@ -9,7 +9,7 @@ DDRA_NORMAL = %11100000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
-KEY_DATA = %00000001 ; which bit of PORTA do we read PS/2 bits from?
+KEY_DATA = %10000000 ; which bit of PORTA do we read PS/2 bits from?
 
 ; Zero page variable locations
 KEY_BUF_X = $00      ; producer index into KEY_BUF
@@ -205,10 +205,9 @@ nmi:
   ; Now we've captured the bit, we have a few more cycles to store it.
   ; Because we only have a few cycles, the main state machine will need to be in
   ; `process_one_ps2_bit` in the main loop.
+  ror
+  ror
   and #KEY_DATA
-  clc
-  ror
-  ror
   phx
   ldx KEY_BUF_X
   sta KEY_BUF,x
