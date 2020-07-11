@@ -132,6 +132,10 @@ print_ps2_key:
   ; A is scan code.
   cmp #$F0
   beq ignore_next
+
+  cmp #$5F
+  bpl too_high
+
   tax
   lda ps2_scan_codes,x
   jsr print_char
