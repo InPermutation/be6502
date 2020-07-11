@@ -183,6 +183,25 @@ s_hex:
   .asciiz "0123456789ABCDEF"
 
 irq_brk:
+  pha
+; Clear display
+  lda #%00000001 ; Clear display
+  jsr lcd_instruction
+
+  lda KEY_BUF_X
+  jsr print_hex_byte
+  lda KEY_READ_X
+  jsr print_hex_byte
+  lda #" "
+  jsr print_char
+  lda PS2_NEXT_BYTE
+  jsr print_hex_byte
+  lda #" "
+  jsr print_char
+  lda PS2_BIT_NUMBER
+  jsr print_hex_byte
+
+  pla
   rti
 
 nmi:
