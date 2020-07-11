@@ -16,6 +16,7 @@ KEY_BUF_X = $00      ; producer index into KEY_BUF
 KEY_READ_X = $01     ; consumer index into KEY_BUF
 PS2_BIT_NUMBER = $02 ; which bit will we read next?
 PS2_NEXT_BYTE = $03  ; storage to decode PS/2 bits into bytes
+PS2_IGNORE_NEXT_CODE = $04
 
 
 ; 1-page is the stack
@@ -38,6 +39,7 @@ reset:
   stz KEY_READ_X
   stz PS2_BIT_NUMBER
   stz PS2_NEXT_BYTE
+  stz PS2_IGNORE_NEXT_CODE
 
   lda #ALL_OUT ; Set all pins on port B to output
   sta DDRB
@@ -62,8 +64,6 @@ reset:
 ; Clear display
   lda #%00000001 ; Clear display
   jsr lcd_instruction
-
-  ldy #0
 
 loop:
 
@@ -105,7 +105,7 @@ ps2_parity_bit:
 
 ps2_stop_bit:
   lda PS2_NEXT_BYTE
-  jsr print_hex_byte
+  jsr print_ps2_key
   stz PS2_BIT_NUMBER
   inc KEY_READ_X
   jmp loop
@@ -122,6 +122,30 @@ lcd_instruction:
   lda #0         ; Clear RS/RW/E bits
   sta PORTA
   pla
+  rts
+
+
+print_ps2_key:
+  bit PS2_IGNORE_NEXT_CODE
+  bmi code_ignored
+
+  ; A is scan code.
+  cmp #$F0
+  beq ignore_next
+  tax
+  lda ps2_scan_codes,x
+  jsr print_char
+  rts
+
+too_high:
+  rts
+ignore_next:
+  lda #$FF
+  sta PS2_IGNORE_NEXT_CODE
+  rts
+
+code_ignored:
+  stz PS2_IGNORE_NEXT_CODE
   rts
 
 print_hex_byte:
@@ -179,8 +203,17 @@ lcd_wait_loop:
   pla
   rts
 
+  .align 8
+ps2_scan_codes:
+  ;       0123456789ABCDEF
+  .asc "??????????????`?" ; 0
+  .asc "?????Q1???ZSAW2?" ; 1
+  .asc "?CXDE43?? VFTR5?" ; 2
+  .asc "?NBHGY6???MJU78?" ; 3
+  .asc "?,KIO09??./L;P-?" ; 4
+  .asc "??'?[=?????]?\??" ; 5
 s_hex:
-  .asciiz "0123456789ABCDEF"
+  .asc "0123456789ABCDEF"
 
 irq_brk:
   pha
