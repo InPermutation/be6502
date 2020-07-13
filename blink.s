@@ -12,18 +12,20 @@ ALL_OUT = %11111111
 PS2_BIT = %10000000 ; which bit of PORTA do we read PS/2 bits from?
 
 ; Zero page variable locations
-KEY_BUF_X = $00      ; producer index into KEY_BUF
-KEY_READ_X = $01     ; consumer index into KEY_BUF
+KEY_BUF_WRITE = $00  ; producer pointer into KEY_BUF
+KEY_BUF_WRITE_HI = $01 ; always KEY_BUF_HI
 PS2_BIT_NUMBER = $02 ; which bit will we read next?
 PS2_NEXT_BYTE = $03  ; storage to decode PS/2 bits into bytes
 PS2_IGNORE_NEXT_CODE = $04
+KEY_BUF_READ = $05 ; consumer pointer into KEY_BUF
+KEY_BUF_READ_HI = $06 ; always KEY_BUF_HI
 
 
 ; 1-page is the stack
-THE_STACK = $0100
+THE_STACK_HI = $01
 
 ; 2-page is a circular buffer of the raw PS/2 bits (#0 or #1)
-KEY_BUF = $0200      ; use Page 2 as circular buffer of PS/2 bits
+KEY_BUF_HI = $02      ; use Page 2 as circular buffer of PS/2 bits
 
 E = %10000000
 RW = %01000000
@@ -35,11 +37,16 @@ reset:
   ldx #$ff
   txs
 
-  stz KEY_BUF_X
-  stz KEY_READ_X
+  stz KEY_BUF_WRITE
   stz PS2_BIT_NUMBER
   stz PS2_NEXT_BYTE
   stz PS2_IGNORE_NEXT_CODE
+  stz KEY_BUF_READ
+
+  lda #KEY_BUF_HI
+  sta KEY_BUF_WRITE_HI
+  sta KEY_BUF_READ_HI
+
 
   lda #ALL_OUT ; Set all pins on port B to output
   sta DDRB
@@ -68,8 +75,8 @@ reset:
 loop:
 
 ps2_check_bit:
-  lda KEY_READ_X
-  cmp KEY_BUF_X
+  lda KEY_BUF_READ
+  cmp KEY_BUF_WRITE
   beq loop
 
 process_one_ps2_bit:
@@ -82,18 +89,17 @@ process_one_ps2_bit:
   beq ps2_stop_bit
 
 ps2_data_bit:
-  ldx KEY_READ_X
   lda PS2_NEXT_BYTE
   ror
   and #$7F
-  ora KEY_BUF,x
+  ora (KEY_BUF_READ)
   sta PS2_NEXT_BYTE
 
 
 next_ps2_bit:
   inc PS2_BIT_NUMBER
 inc_key_read_x:
-  inc KEY_READ_X
+  inc KEY_BUF_READ
 
   jmp ps2_check_bit
 
@@ -107,7 +113,7 @@ ps2_stop_bit:
   lda PS2_NEXT_BYTE
   jsr print_ps2_key
   stz PS2_BIT_NUMBER
-  inc KEY_READ_X
+  inc KEY_BUF_READ
   jmp loop
 
 lcd_instruction:
@@ -225,9 +231,11 @@ irq_brk:
   lda #%00000001 ; Clear display
   jsr lcd_instruction
 
-  lda KEY_BUF_X
+  lda KEY_BUF_WRITE
   jsr print_hex_byte
-  lda KEY_READ_X
+  lda #"/"
+  jsr print_char
+  lda KEY_BUF_READ
   jsr print_hex_byte
   lda #" "
   jsr print_char
@@ -264,12 +272,9 @@ nmi:
   ror
   ror
   and #PS2_BIT
-  phx
-  ldx KEY_BUF_X
-  sta KEY_BUF,x
-  inc KEY_BUF_X
+  sta (KEY_BUF_WRITE)
+  inc KEY_BUF_WRITE
 
-  plx
   pla
   rti
 
