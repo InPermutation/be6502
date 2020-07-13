@@ -9,7 +9,7 @@ DDRA_NORMAL = %11100000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
-KEY_DATA = %10000000 ; which bit of PORTA do we read PS/2 bits from?
+PS2_BIT = %10000000 ; which bit of PORTA do we read PS/2 bits from?
 
 ; Zero page variable locations
 KEY_BUF_X = $00      ; producer index into KEY_BUF
@@ -263,7 +263,7 @@ nmi:
   ; `process_one_ps2_bit` in the main loop.
   ror
   ror
-  and #KEY_DATA
+  and #PS2_BIT
   phx
   ldx KEY_BUF_X
   sta KEY_BUF,x
