@@ -5,7 +5,7 @@ DDRB  = $6002
 DDRA  = $6003
 
 ; VIA masks
-DDRA_NORMAL = %11100000
+DDRA_NORMAL = %01110000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
@@ -27,7 +27,7 @@ THE_STACK_HI = $01
 ; 2-page is a circular buffer of the raw PS/2 bits (#0 or #1)
 KEY_BUF_HI = $02      ; use Page 2 as circular buffer of PS/2 bits
 
-E = %10000000
+E = %00010000
 RW = %01000000
 RS = %00100000
 
