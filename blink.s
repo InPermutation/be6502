@@ -90,8 +90,7 @@ process_one_ps2_bit:
 
 ps2_data_bit:
   lda PS2_NEXT_BYTE
-  ror
-  and #$7F
+  lsr
   ora (KEY_BUF_READ)
   sta PS2_NEXT_BYTE
 
