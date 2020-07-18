@@ -251,7 +251,7 @@ irq_brk:
 nmi:
   ; The PS/2 keyboard protocol is clocked by the keyboard itself
   ; Tie the CLOCK line to the NMI with a pull-up resistor, and the DATA line
-  ; to the VIA, PORTA, bit 0.
+  ; to the VIA, PORTA, bit 7.
   ; PS/2 clock speed is expected to be somewhere between 10kHz-16.7kHz
   ; If our CPU is running at 1MHz, that gives us 59.88 cycles per bit.
   ; The data is only valid for the first half of those, and we really
@@ -268,8 +268,6 @@ nmi:
   ; Now we've captured the bit, we have a few more cycles to store it.
   ; Because we only have a few cycles, the main state machine will need to be in
   ; `process_one_ps2_bit` in the main loop.
-  ror
-  ror
   and #PS2_BIT
   sta (KEY_BUF_WRITE)
   inc KEY_BUF_WRITE
