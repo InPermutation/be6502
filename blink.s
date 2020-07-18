@@ -10,6 +10,7 @@ ALL_IN = %00000000
 ALL_OUT = %11111111
 
 PS2_BIT = %10000000 ; which bit of PORTA do we read PS/2 bits from?
+PS2_RESET_BIT_NUMBER = 10
 
 ; Zero page variable locations
 KEY_BUF_WRITE = $00  ; producer pointer into KEY_BUF
@@ -38,10 +39,12 @@ reset:
   txs
 
   stz KEY_BUF_WRITE
-  stz PS2_BIT_NUMBER
   stz PS2_NEXT_BYTE
   stz PS2_IGNORE_NEXT_CODE
   stz KEY_BUF_READ
+
+  lda #PS2_RESET_BIT_NUMBER
+  sta PS2_BIT_NUMBER
 
   lda #KEY_BUF_HI
   sta KEY_BUF_WRITE_HI
@@ -78,41 +81,9 @@ ps2_check_bit:
   lda KEY_BUF_READ
   cmp KEY_BUF_WRITE
   beq loop
-
-process_one_ps2_bit:
-  lda PS2_BIT_NUMBER
-  cmp #0
-  beq ps2_start_bit
-  cmp #9
-  beq ps2_parity_bit
-  cmp #10
-  beq ps2_stop_bit
-
-ps2_data_bit:
-  lda PS2_NEXT_BYTE
-  lsr
-  ora (KEY_BUF_READ)
-  sta PS2_NEXT_BYTE
-
-
-next_ps2_bit:
-  inc PS2_BIT_NUMBER
-inc_key_read_x:
+  lda (KEY_BUF_READ)
   inc KEY_BUF_READ
-
-  jmp ps2_check_bit
-
-
-ps2_start_bit:
-  jmp next_ps2_bit
-ps2_parity_bit:
-  jmp next_ps2_bit
-
-ps2_stop_bit:
-  lda PS2_NEXT_BYTE
   jsr print_ps2_key
-  stz PS2_BIT_NUMBER
-  inc KEY_BUF_READ
   jmp loop
 
 lcd_instruction:
@@ -262,18 +233,49 @@ nmi:
   ; and will only process an interrupt at the beginning of an instruction,
   ; so we're already 8-14 cycles in. Hurry!!
 
-  pha
-  lda PORTA
+  ;               Cycles  +  ==
+  pha ;                   3  17
+  lda PORTA ;             4  23
 
-  ; Now we've captured the bit, we have a few more cycles to store it.
-  ; Because we only have a few cycles, the main state machine will need to be in
-  ; `process_one_ps2_bit` in the main loop.
-  and #PS2_BIT
-  sta (KEY_BUF_WRITE)
-  inc KEY_BUF_WRITE
+  ; PS2_BIT_NUMBER will be decremented to the following values:
+  ; START BIT -> 9
+  ; Bit 0     -> 8
+  ; Bit 1     -> 7
+  ; Bit 2     -> 6
+  ; Bit 3     -> 5
+  ; Bit 4     -> 4
+  ; Bit 5     -> 3
+  ; Bit 6     -> 2
+  ; Bit 7     -> 1
+  ; PARITY BIT-> 0
+  ; STOP BIT  -> -1
 
-  pla
-  rti
+  ; 0 and -1 can be tested by the BEQ and BMI branches.
+  dec PS2_BIT_NUMBER ;    5  28
+  beq store_ps2_byte ;    2  30
+  bmi reset_bit_number ;  2  32
+
+  ; Otherwise, rotate into in the PS2_NEXT_BYTE
+  and #PS2_BIT ;          2  34
+  lsr PS2_NEXT_BYTE ;     5  39
+  ora PS2_NEXT_BYTE ;     3  43
+  sta PS2_NEXT_BYTE ;     3  46
+
+  pla               ;     4  50
+  rti               ;     6  56
+
+store_ps2_byte:     ;     1  31
+  lda PS2_NEXT_BYTE ;     3  34
+  sta (KEY_BUF_WRITE) ;   6  40
+  inc KEY_BUF_WRITE ;     5  45
+  pla               ;     4  49
+  rti               ;     6  55
+
+reset_bit_number:   ;     1  33
+  lda #PS2_RESET_BIT_NUMBER ; 2 35
+  sta PS2_BIT_NUMBER ;    3  39
+  pla ;                   4  43
+  rti ;                   6  49
 
 ; Vector locations
   .org $fffa
