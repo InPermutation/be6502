@@ -1,16 +1,14 @@
 ; da65 V2.18 - Git N/A
-; Created:    2020-07-23 21:59:51
+; Created:    2020-07-23 22:01:38
 ; Input file: TINYBASIC.OUT
 ; Page:       1
-
-
-        .setcpu "6502"
 
 L4145           := $4145
 L5441           := $5441
 L7080           := $7080
 L9148           := $9148
 LD445           := $D445
+        org $0000
 L0000:  brk
 L0001:  brk
 L0002:  brk
