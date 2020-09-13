@@ -9,6 +9,10 @@ DDRA_NORMAL = %11100000
 ALL_IN = %00000000
 ALL_OUT = %11111111
 
+; TMS9918A
+VDP_VRAM = $4000
+VDP_REG  = $4001
+
 PS2_RESET_BIT_NUMBER = 10
 
 ; Zero page variable locations
@@ -73,6 +77,12 @@ reset:
 ; Clear display
   lda #%00000001 ; Clear display
   jsr lcd_instruction
+
+; Set TV background "Light yellow"
+  lda #$0B
+  sta VDP_REG
+  lda #%10000111 ; Register 7
+  sta VDP_REG
 
 loop:
 
