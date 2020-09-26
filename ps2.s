@@ -36,42 +36,39 @@ ps2_reset:
   sta KEY_BUF_READ_HI
   rts
 
-ps2_check_bit:
+; get a character
+getch:
   lda KEY_BUF_READ
   cmp KEY_BUF_WRITE
-  beq exit_ps2_check_bit
+  beq getch
+
+; found a character -> decode it
   lda (KEY_BUF_READ)
   inc KEY_BUF_READ
-  jsr print_ps2_key
-exit_ps2_check_bit:
-  rts
-
-print_ps2_key:
   bit PS2_IGNORE_NEXT_CODE
   bmi code_ignored
 
-  ; A is scan code.
+; F0 is a "key released" scan code -> ignore next code
   cmp #$F0
   beq ignore_next
 
+; can't decode >= $60
   cmp #$5F
-  bpl too_high
+  bpl getch ; too high
 
+; map scan code to ASCII
   tax
   lda ps2_scan_codes,x
-  jsr print_char
   rts
 
-too_high:
-  rts
 ignore_next:
   lda #$FF
   sta PS2_IGNORE_NEXT_CODE
-  rts
+  jmp getch
 
 code_ignored:
   stz PS2_IGNORE_NEXT_CODE
-  rts
+  jmp getch
 
 
 

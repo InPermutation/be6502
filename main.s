@@ -16,7 +16,8 @@ reset:
   cli
 
 loop:
-  jsr ps2_check_bit
+  jsr getch
+  jsr putchar
   jmp loop
 
 ; Vector locations

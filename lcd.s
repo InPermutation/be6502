@@ -46,17 +46,17 @@ print_hex_byte:
   and #$0f
   tax
   lda s_hex,x
-  jsr print_char
+  jsr putchar
   pla
   and #$0f
   tax
   lda s_hex,x
-  jsr print_char
+  jsr putchar
   pla
   plx
   rts
 
-print_char:
+putchar:
   jsr lcd_wait
 
   sta PORTB
