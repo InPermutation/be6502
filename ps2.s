@@ -124,33 +124,11 @@ store_ps2_byte:     ;     1  31
   pla               ;     4  49
   rti               ;     6  55
 
+ps2_irq_brk:
+  pha
 reset_bit_number:   ;     1  33
   lda #PS2_RESET_BIT_NUMBER ; 2 35
   sta PS2_BIT_NUMBER ;    3  39
   pla ;                   4  43
   rti ;                   6  49
-
-ps2_irq_brk:
-  pha
-; Clear display
-  lda #%00000001 ; Clear display
-  jsr lcd_instruction
-
-  lda KEY_BUF_WRITE
-  jsr print_hex_byte
-  lda #"/"
-  jsr print_char
-  lda KEY_BUF_READ
-  jsr print_hex_byte
-  lda #" "
-  jsr print_char
-  lda PS2_NEXT_BYTE
-  jsr print_hex_byte
-  lda #" "
-  jsr print_char
-  lda PS2_BIT_NUMBER
-  jsr print_hex_byte
-
-  pla
-  rti
 
