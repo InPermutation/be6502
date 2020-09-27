@@ -1,7 +1,16 @@
+; A 20x4 LCD display.
+
 ; LCD flags
 E = %10000000
 RW = %01000000
 RS = %00100000
+
+; constants
+LCD_LINE_LENGTH = 20
+LCD_LINE0 = 0
+LCD_LINE1 = $40
+LCD_LINE2 = LCD_LINE_LENGTH
+LCD_LINE3 = LCD_LINE1 + LCD_LINE_LENGTH
 
 lcd_reset:
 ; Set mode
@@ -19,6 +28,13 @@ lcd_reset:
 ; Clear display
   lda #%00000001 ; Clear display
   jsr lcd_instruction
+  rts
+
+lcd_move:
+  pha
+  ora #%10000000
+  jsr lcd_instruction
+  pla
   rts
 
 lcd_instruction:
@@ -88,6 +104,24 @@ lcd_wait_loop:
   lda #ALL_OUT ; Restore port B to output
   sta DDRB
   pla
+  rts
+
+lcd_read:
+  lda #ALL_IN ; Port B is input
+  sta DDRB
+  lda #(RW | RS)
+  sta PORTA
+  lda #(RW | RS | E)
+  sta PORTA
+  lda PORTB
+  pha ; store PORTB on the stack
+  lda #(RW | RS)
+  sta PORTA
+  lda #0
+  sta PORTA
+  lda #ALL_OUT
+  sta DDRB
+  pla ; return value of PORTB from above
   rts
 
 s_hex:

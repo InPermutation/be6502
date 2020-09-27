@@ -3,6 +3,11 @@
   .include 'via.s'
   .include 'lcd.s'
   .include 'vdp.s'
+  .include 'tty.s'
+
+s_reset: .asciiz "Initialized."
+s_reset_2: .asciiz "hello, world."
+s_empty: .asciiz ""
 
 reset:
   ; initialize stack pointer to $01FF
@@ -13,11 +18,31 @@ reset:
   jsr ps2_reset
   jsr lcd_reset
   jsr vdp_reset
+  jsr tty_reset
+
+  lda #<s_reset
+  sta TTY_PUTS
+  lda #>s_reset
+  sta TTY_PUTS_HI
+  jsr puts
+
+  lda #<s_reset_2
+  sta TTY_PUTS
+  lda #>s_reset_2
+  sta TTY_PUTS_HI
+  jsr puts
+
   cli
+  lda #<s_empty
+  sta TTY_PUTS
+  lda #>s_empty
+  sta TTY_PUTS_HI
+  lda #0
 
 loop:
-  jsr getch
-  jsr putchar
+  jsr print_hex_byte
+  jsr puts ; TTY_PUTS was loaded in reset
+  ina
   jmp loop
 
 ; Vector locations
