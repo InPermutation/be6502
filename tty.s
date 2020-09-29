@@ -21,6 +21,15 @@ tty_reset:
   pla
   jmp tty_return
 
+  .macro puts
+  pha
+  lda #<\1
+  sta TTY_PUTS
+  lda #>\1
+  sta TTY_PUTS_HI
+  jsr puts
+  pla
+  .endm
 
 ; Prints ASCIIZ string at (TTY_PUTS) to the console, followed by a newline
 puts:

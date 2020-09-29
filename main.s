@@ -20,28 +20,15 @@ reset:
   jsr vdp_reset
   jsr tty_reset
 
-  lda #<s_reset
-  sta TTY_PUTS
-  lda #>s_reset
-  sta TTY_PUTS_HI
-  jsr puts
-
-  lda #<s_reset_2
-  sta TTY_PUTS
-  lda #>s_reset_2
-  sta TTY_PUTS_HI
-  jsr puts
+  puts s_reset
+  puts s_reset_2
 
   cli
-  lda #<s_empty
-  sta TTY_PUTS
-  lda #>s_empty
-  sta TTY_PUTS_HI
   lda #0
 
 loop:
   jsr print_hex_byte
-  jsr puts ; TTY_PUTS was loaded in reset
+  puts s_empty
   ina
   jmp loop
 
