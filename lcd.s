@@ -75,6 +75,7 @@ print_hex_byte:
 putchar:
   jsr lcd_wait
 
+  pha
   sta PORTB
   lda #RS        ; Set RS
   sta PORTA
@@ -82,6 +83,7 @@ putchar:
   sta PORTA
   lda #RS         ; Clear E bit
   sta PORTA
+  pla
   rts
 
 lcd_wait:

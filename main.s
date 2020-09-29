@@ -7,7 +7,7 @@
 
 s_reset: .asciiz "Initialized."
 s_reset_2: .asciiz "hello, world."
-s_empty: .asciiz ""
+s_ok: .asciiz " chars read."
 
 reset:
   ; initialize stack pointer to $01FF
@@ -24,12 +24,12 @@ reset:
   puts s_reset_2
 
   cli
-  lda #0
 
 loop:
+  jsr readline
+  lda TTY_READLINE
   jsr print_hex_byte
-  puts s_empty
-  ina
+  puts s_ok
   jmp loop
 
 ; Vector locations

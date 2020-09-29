@@ -6,10 +6,13 @@ TTY_PUTS = $10 ; pointer to the ASCIIZ to puts()
 TTY_PUTS_HI = $11 ; high byte of TTY_PUTS
 TTY_CURRENT_LINE = $12 ; pointer to TTY-internal buffer
 TTY_CURRENT_LINE_HI = $13 ; always TTY_BUF_HI
+TTY_READLINE = $14 ; pointer to TTY readline buffer
+TTY_READLINE_HI = $15
 
 
 ; 3-page is a TTY buffer
 TTY_BUF_HI = $03 ; use Page 3 as TTY buffer
+TTY_READBUF_HI = $04 ; use Page 4 as readline buffer
 
 tty_reset:
   pha
@@ -18,8 +21,43 @@ tty_reset:
   sta TTY_PUTS_HI
   stz TTY_CURRENT_LINE
   stz TTY_PUTS
+  lda #TTY_READBUF_HI
+  sta TTY_READLINE_HI
+  stz TTY_READLINE
   pla
   jmp tty_return
+
+readline:
+  pha
+  jsr tty_return
+  jsr spaceline
+  jsr tty_return
+
+  lda #'>'
+  jsr putchar
+  lda #' '
+  jsr putchar
+
+  stz TTY_READLINE
+readline_loop:
+  jsr getch
+  cmp #'n'
+  beq readline_complete
+  sta (TTY_READLINE)
+  jsr putchar
+  inc TTY_READLINE
+  lda TTY_READLINE
+  ina ; #'>'  these are the readline prompt
+  ina ; #' '
+  cmp #LCD_LINE_LENGTH
+  bne readline_loop
+readline_complete:
+  lda #0
+  sta (TTY_READLINE)
+  jsr tty_scroll
+  pla
+  rts
+
 
   .macro puts
   pha
