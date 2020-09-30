@@ -128,3 +128,4 @@ lcd_read:
 
 s_hex:
   .asc "0123456789ABCDEF"
+  .byte 0

@@ -4,10 +4,8 @@
   .include 'lcd.s'
   .include 'vdp.s'
   .include 'tty.s'
+  .include 'monitor.s'
 
-s_reset: .asciiz "Initialized."
-s_reset_2: .asciiz "hello, world."
-s_ok: .asciiz " chars read."
 
 reset:
   ; initialize stack pointer to $01FF
@@ -20,17 +18,9 @@ reset:
   jsr vdp_reset
   jsr tty_reset
 
-  puts s_reset
-  puts s_reset_2
-
   cli
+  jmp monitor
 
-loop:
-  jsr readline
-  lda TTY_READLINE
-  jsr print_hex_byte
-  puts s_ok
-  jmp loop
 
 ; Vector locations
   .org $fffa
