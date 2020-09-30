@@ -72,15 +72,18 @@ readline_complete:
 ; Prints ASCIIZ string at (TTY_PUTS) to the console, followed by a newline
 puts:
   pha
+  phx
+  ldx #0
 _puts_loop:
   lda (TTY_PUTS)
   beq _endl
   jsr putchar
   inc TTY_PUTS
-  lda TTY_PUTS
-  cmp #LCD_LINE_LENGTH
+  inx
+  cpx #LCD_LINE_LENGTH
   bne _puts_loop
 _endl:
+  plx
   pla
   jmp tty_scroll
 
