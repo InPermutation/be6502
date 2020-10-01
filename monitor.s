@@ -16,6 +16,12 @@ monitor_loop:
   jsr print_hex_byte
   lda MONITOR
   jsr print_hex_byte
+  lda #':'
+  jsr putchar
+  lda #' '
+  jsr putchar
+  lda (MONITOR)
+  jsr print_hex_byte
   jsr tty_scroll
   jmp monitor_loop
 
