@@ -81,6 +81,6 @@ _nomatch:
 
   .align 8
 s_reset: .asciiz "0000<CR>->inspect"
-s_reset_2: .asciiz "0000:12<CR>->set"
+s_reset_2: .asciiz "0000=12<CR>->set"
 s_reset_3: .asciiz "0000R<CR>->run"
 
