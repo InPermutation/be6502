@@ -25,9 +25,16 @@ monitor_loop:
   lda (TTY_READLINE)
   cmp #'='
   beq monitor_write_mem
+  cmp #'R'
+  beq monitor_run
 _monitor_done:
   jsr tty_scroll
   jmp monitor_loop
+
+monitor_run:
+  jsr putchar
+  jsr tty_scroll
+  jmp (MONITOR_READ)
 
 monitor_write_mem:
   inc TTY_READLINE
