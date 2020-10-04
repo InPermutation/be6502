@@ -12,6 +12,25 @@ monitor_loop:
   jsr readline
   stz TTY_READLINE
   jsr monitor_read_word
+  lda (TTY_READLINE)
+  cmp #'='
+  beq monitor_write_mem
+  cmp #'R'
+  beq monitor_run
+  ; else
+  bra monitor_read_mem
+
+_monitor_done:
+  jsr tty_scroll
+  jmp monitor_loop
+
+monitor_run:
+  jsr putchar
+  jsr tty_scroll
+  jmp (MONITOR_READ)
+
+monitor_read_mem:
+  ; else, print the byte
   lda MONITOR_READ_HI
   jsr print_hex_byte
   lda MONITOR_READ
@@ -22,19 +41,7 @@ monitor_loop:
   jsr putchar
   lda (MONITOR_READ)
   jsr print_hex_byte
-  lda (TTY_READLINE)
-  cmp #'='
-  beq monitor_write_mem
-  cmp #'R'
-  beq monitor_run
-_monitor_done:
-  jsr tty_scroll
-  jmp monitor_loop
-
-monitor_run:
-  jsr putchar
-  jsr tty_scroll
-  jmp (MONITOR_READ)
+  bra _monitor_done
 
 monitor_write_mem:
   inc TTY_READLINE
@@ -45,7 +52,7 @@ monitor_write_mem:
   jsr monitor_read_word
   lda MONITOR_READ
   sta (MONITOR_WRITE)
-  jmp _monitor_done
+  bra _monitor_done
 
 monitor_read_word:
   pha
