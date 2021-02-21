@@ -1,13 +1,15 @@
 PS2_RESET_BIT_NUMBER = 10
 
 ; Zero page variable locations
-KEY_BUF_WRITE = $00  ; producer pointer into KEY_BUF
-KEY_BUF_WRITE_HI = $01 ; always KEY_BUF_HI
-PS2_BIT_NUMBER = $02 ; which bit will we read next?
-PS2_NEXT_BYTE = $03  ; storage to decode PS/2 bits into bytes
-PS2_IGNORE_NEXT_CODE = $04
-KEY_BUF_READ = $05 ; consumer pointer into KEY_BUF
-KEY_BUF_READ_HI = $06 ; always KEY_BUF_HI
+    .dsect
+KEY_BUF_WRITE: reserve 1  ; producer pointer into KEY_BUF
+KEY_BUF_WRITE_HI: reserve 1 ; always KEY_BUF_HI
+PS2_BIT_NUMBER: reserve 1 ; which bit will we read next?
+PS2_NEXT_BYTE: reserve 1  ; storage to decode PS/2 bits into bytes
+PS2_IGNORE_NEXT_CODE: reserve 1
+KEY_BUF_READ: reserve 1 ; consumer pointer into KEY_BUF
+KEY_BUF_READ_HI: reserve 1 ; always KEY_BUF_HI
+    .dend
 
 ; 2-page is a circular buffer of the raw PS/2 bits (#0 or #1)
 KEY_BUF_HI = $02      ; use Page 2 as circular buffer of PS/2 bits

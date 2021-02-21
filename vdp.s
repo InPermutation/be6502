@@ -9,8 +9,11 @@ VDP_NAME_TABLE_BASE = $0000
 VDP_PATTERN_TABLE_BASE = $0800
 
 ; zero page addresses
-VDP_PATTERN_INIT = $30
-VDP_PATTERN_INIT_HI = $31
+    .dsect
+    .org $30
+VDP_PATTERN_INIT: reserve 1
+VDP_PATTERN_INIT_HI: reserve 1
+    .dend
 
   .macro vdp_write_vram
   lda #<(\1)

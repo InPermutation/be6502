@@ -1,8 +1,11 @@
 ; zero page addresses
-MONITOR_READ = $20 ; store a word read from TTY_READLINE here
-MONITOR_READ_HI = $21
-MONITOR_WRITE = $22
-MONITOR_WRITE_HI = $23
+    .dsect
+    .org $20
+MONITOR_READ: reserve 1 ; store a word read from TTY_READLINE here
+MONITOR_READ_HI: reserve 1
+MONITOR_WRITE: reserve 1
+MONITOR_WRITE_HI: reserve 1
+    .dend
 
 monitor:
   puts s_reset

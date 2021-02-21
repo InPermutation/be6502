@@ -2,12 +2,15 @@
 ; uses `getch` for input, assumes 20x4 LCD for output
 
 ; zero page addresses
-TTY_PUTS = $10 ; pointer to the ASCIIZ to puts()
-TTY_PUTS_HI = $11 ; high byte of TTY_PUTS
-TTY_CURRENT_LINE = $12 ; pointer to TTY-internal buffer
-TTY_CURRENT_LINE_HI = $13 ; always TTY_BUF_HI
-TTY_READLINE = $14 ; pointer to TTY readline buffer
-TTY_READLINE_HI = $15
+    .dsect
+    .org $10
+TTY_PUTS: reserve 1 ; pointer to the ASCIIZ to puts()
+TTY_PUTS_HI: reserve 1 ; high byte of TTY_PUTS
+TTY_CURRENT_LINE: reserve 1 ; pointer to TTY-internal buffer
+TTY_CURRENT_LINE_HI: reserve 1 ; always TTY_BUF_HI
+TTY_READLINE: reserve 1 ; pointer to TTY readline buffer
+TTY_READLINE_HI: reserve 1
+    .dend
 
 
 ; 3-page is a TTY buffer
