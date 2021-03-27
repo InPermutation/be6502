@@ -8,6 +8,23 @@ VDP_REGISTER_BITS = $80
 VDP_NAME_TABLE_BASE = $0000
 VDP_PATTERN_TABLE_BASE = $0800
 
+COL_TRANSPARENT = $0
+COL_BLACK = $1
+COL_MEDGREEN = $2
+COL_LTGREEN = $3
+COL_DARKBLUE = $4
+COL_LTBLUE = $5
+COL_DARKRED = $6
+COL_CYAN = $7
+COL_MEDRED = $8
+COL_LTRED = $9
+COL_DARKYELLOW = $A
+COL_LTYELLOW = $B
+COL_DARKGREEN = $C
+COL_MAGENTA = $D
+COL_GRAY = $E
+COL_WHITE = $F
+
 ; zero page addresses
     .dsect
     .org $30
@@ -50,7 +67,7 @@ vdp_reg_reset_loop:
   rts
 
 vdp_initialize_pattern_table:
-  ; initialize the pattern table to the 16 hex digits
+  ; initialize the pattern table to ASCII
   pha
   phx
   vdp_write_vram VDP_PATTERN_TABLE_BASE
@@ -81,12 +98,17 @@ vdp_pattern_table_loop:
 
 vdp_initialize_name_table:
   pha
+  phx
   vdp_write_vram VDP_NAME_TABLE_BASE
   lda #0
+  ldx #3
 vdp_name_table_loop:
   sta VDP_VRAM
   inc
   bne vdp_name_table_loop ; will be true after $FF
+  dex
+  bne vdp_name_table_loop ; will be true after 3rd block
+  plx
   pla
   rts
 
@@ -108,7 +130,7 @@ vdp_register_3: .byte $00       ; Color table base (currently unused)
 vdp_register_4: .byte $01       ; Pattern table base / $800. $01 = $0800
 vdp_register_5: .byte $00       ; Sprite attribute table base (currently unused)
 vdp_register_6: .byte $00       ; Sprite pattern generator (currently unused)
-vdp_register_7: .byte $1E       ; FG/BG. 1=>Black, E=>Gray
+vdp_register_7: .byte (COL_MEDRED * 16 + COL_DARKGREEN) ; FG/BG.
 vdp_end_register_inits:
 
   .align 8
