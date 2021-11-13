@@ -124,8 +124,6 @@ store_ps2_byte:     ;     1  31
   pla               ;     4  49
   rti               ;     6  55
 
-ps2_irq_brk:
-  pha
 reset_bit_number:   ;     1  33
   lda #PS2_RESET_BIT_NUMBER ; 2 35
   sta PS2_BIT_NUMBER ;    3  39
