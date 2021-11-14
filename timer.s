@@ -13,9 +13,9 @@ timer_reset:
   stz ticks + 3
   lda #%01000000 ; T1 continuous interrupts
   sta ACR
-  lda #$0e
+  lda #$59
   sta T1CL
-  lda #$27
+  lda #$00
   sta T1CH
   lda #%11000000 ; Set T1 interrupt enabled
   sta IER
