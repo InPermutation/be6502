@@ -130,7 +130,7 @@ vdp_register_3: .byte $00       ; Color table base (currently unused)
 vdp_register_4: .byte $01       ; Pattern table base / $800. $01 = $0800
 vdp_register_5: .byte $00       ; Sprite attribute table base (currently unused)
 vdp_register_6: .byte $00       ; Sprite pattern generator (currently unused)
-vdp_register_7: .byte (COL_MEDRED * 16 + COL_DARKGREEN) ; FG/BG.
+vdp_register_7: .byte (COL_MEDGREEN * 16 + COL_BLACK) ; FG/BG.
 vdp_end_register_inits:
 
   .align 8
