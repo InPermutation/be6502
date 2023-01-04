@@ -96,18 +96,55 @@ vdp_pattern_table_loop:
   pla
   rts
 
+BOARD_WIDTH = 40 - 2
+BOARD_HEIGHT = 24 - 2
+
 vdp_initialize_name_table:
   pha
   phx
+  phy
   vdp_write_vram VDP_NAME_TABLE_BASE
-  lda #0
-  ldx #3
-vdp_name_table_loop:
+.top_border:
+  lda #3
   sta VDP_VRAM
-  inc
-  bne vdp_name_table_loop ; will be true after $FF
+  ldx #BOARD_WIDTH
+  lda #0
+.top_border_horiz:
+  sta VDP_VRAM
   dex
-  bne vdp_name_table_loop ; will be true after 3rd block
+  bne .top_border_horiz
+  lda #2
+  sta VDP_VRAM
+
+  ldy #BOARD_HEIGHT
+.mid_board:
+  lda #1
+  sta VDP_VRAM
+  ldx #BOARD_WIDTH
+  lda #' '
+.mid_board_horiz
+  sta VDP_VRAM
+  dex
+  bne .mid_board_horiz
+  lda #1
+  sta VDP_VRAM
+  dey
+  bne .mid_board
+
+.bottom_border:
+  lda #5
+  sta VDP_VRAM
+  ldx #BOARD_WIDTH
+  lda #0
+.bottom_border_horiz:
+  sta VDP_VRAM
+  dex
+  bne .bottom_border_horiz
+  lda #4
+  sta VDP_VRAM
+
+.exit
+  ply
   plx
   pla
   rts
