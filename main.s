@@ -7,6 +7,16 @@
   .include 'monitor.s'
 
 irq:
+  pha
+
+  lda VDP_REG ; read VDP status to clear 'F', the interrupt flag.
+
+  vdp_write_vram (VDP_NAME_TABLE_BASE + VDP_COLS + 1)
+
+  pla
+  sta VDP_VRAM
+  inc
+
   rti
 
 reset:
