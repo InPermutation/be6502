@@ -2,6 +2,10 @@
 VDP_VRAM = $4000
 VDP_REG  = $4001
 
+; in text mode,
+VDP_COLS = 40
+VDP_ROWS = 24
+
 VDP_WRITE_VRAM_BIT = $40
 VDP_REGISTER_BITS = $80
 
@@ -96,8 +100,6 @@ vdp_pattern_table_loop:
   pla
   rts
 
-BOARD_WIDTH = 40 - 2
-BOARD_HEIGHT = 24 - 2
 
 vdp_initialize_name_table:
   pha
@@ -107,7 +109,7 @@ vdp_initialize_name_table:
 .top_border:
   lda #3
   sta VDP_VRAM
-  ldx #BOARD_WIDTH
+  ldx #(VDP_COLS - 2)
   lda #0
 .top_border_horiz:
   sta VDP_VRAM
@@ -116,11 +118,11 @@ vdp_initialize_name_table:
   lda #2
   sta VDP_VRAM
 
-  ldy #BOARD_HEIGHT
+  ldy #(VDP_ROWS - 2)
 .mid_board:
   lda #1
   sta VDP_VRAM
-  ldx #BOARD_WIDTH
+  ldx #(VDP_COLS - 2)
   lda #' '
 .mid_board_horiz
   sta VDP_VRAM
@@ -134,13 +136,23 @@ vdp_initialize_name_table:
 .bottom_border:
   lda #5
   sta VDP_VRAM
-  ldx #BOARD_WIDTH
+  ldx #(VDP_COLS - 2)
   lda #0
 .bottom_border_horiz:
   sta VDP_VRAM
   dex
   bne .bottom_border_horiz
   lda #4
+  sta VDP_VRAM
+
+.snake:
+  vdp_write_vram (VDP_NAME_TABLE_BASE + (5 * VDP_COLS) + 30)
+  lda #'*'
+  sta VDP_VRAM
+
+  vdp_write_vram (VDP_NAME_TABLE_BASE + (10 * VDP_COLS) + 20)
+  lda #$7F
+  sta VDP_VRAM
   sta VDP_VRAM
 
 .exit
