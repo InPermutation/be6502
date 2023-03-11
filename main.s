@@ -24,14 +24,38 @@ irq:
   lda HEAD
   adc #1
   sta HEAD
-  ; Also write low byte to VRAM address register
-  sta VDP_REG
 
   ; High byte
   lda HEAD_HI
   adc #0
   sta HEAD_HI
-  ; Also write high byte, with WRITE bit set, to VRAM address register
+
+  ; Set up for a VRAM read to HEAD
+  lda HEAD
+  sta VDP_REG
+  lda HEAD_HI
+  sta VDP_REG
+
+  ; Compare with ASCII space character
+  lda #' '
+  cmp VDP_VRAM
+  beq .continue
+
+  ; Game over - write an X and stop processing
+  lda HEAD
+  sta VDP_REG
+  lda HEAD_HI
+  ORA #VDP_WRITE_VRAM_BIT
+  sta VDP_REG
+  lda #'X'
+  sta VDP_VRAM
+  stp
+
+  ; Set up for a VRAM write to HEAD
+.continue:
+  lda HEAD
+  sta VDP_REG
+  lda HEAD_HI
   ORA #VDP_WRITE_VRAM_BIT
   sta VDP_REG
 
