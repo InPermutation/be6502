@@ -6,16 +6,40 @@
   .include 'tty.s'
   .include 'monitor.s'
 
+SNAKE_PAT = $7F
+SNAKE_INIT_X = 20
+SNAKE_INIT_Y = 10
+HEAD = $50
+HEAD_HI = $51
+
 irq:
   pha
 
   lda VDP_REG ; read VDP status to clear 'F', the interrupt flag.
 
-  vdp_write_vram (VDP_NAME_TABLE_BASE + VDP_COLS + 1)
+  ; Move the snake to the right, and set the VDP address register
+
+  ; Low byte
+  clc
+  lda HEAD
+  adc #1
+  sta HEAD
+  ; Also write low byte to VRAM address register
+  sta VDP_REG
+
+  ; High byte
+  lda HEAD_HI
+  adc #0
+  sta HEAD_HI
+  ; Also write high byte, with WRITE bit set, to VRAM address register
+  ORA #VDP_WRITE_VRAM_BIT
+  sta VDP_REG
+
+  ; Plop a new snake head into VRAM
+  lda #SNAKE_PAT
+  sta VDP_VRAM
 
   pla
-  sta VDP_VRAM
-  inc
 
   rti
 
@@ -78,9 +102,15 @@ reset:
   sta VDP_VRAM
 
   vdp_write_vram (VDP_NAME_TABLE_BASE + (10 * VDP_COLS) + 20)
-  lda #$7F
+  lda #SNAKE_PAT
   sta VDP_VRAM
   sta VDP_VRAM
+  ; store the snake head's current location in HEAD (2 bytes)
+  lda #<(VDP_NAME_TABLE_BASE + (SNAKE_INIT_Y * VDP_COLS) + SNAKE_INIT_X + 1)
+  sta HEAD
+
+  lda #>(VDP_NAME_TABLE_BASE + (SNAKE_INIT_Y * VDP_COLS) + SNAKE_INIT_X + 1)
+  sta HEAD_HI
 
   cli
 
