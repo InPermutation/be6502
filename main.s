@@ -12,6 +12,8 @@ SNAKE_INIT_Y = 10
 HEAD = $50
 HEAD_HI = $51
 SNAKE_DIR = $52
+DELAY = $53
+DELAY_VAL = 10
 
 JOY_UP = 1
 JOY_DOWN = 2
@@ -31,16 +33,22 @@ irq:
   bne .check_down
   lda #1
   sta SNAKE_DIR
-  bra .move_snake
+  bra .wait_delay
 
 .check_down:
   lda #JOY_DOWN
   and PORTA
-  bne .move_snake  ; TODO: up and left
+  bne .wait_delay ; TODO: up and left
   lda #40
   sta SNAKE_DIR
-  bra .move_snake
+  bra .wait_delay
 
+.wait_delay
+  ; Wait for delay
+  dec DELAY
+  bne .exit
+  lda #DELAY_VAL
+  sta DELAY
 
 
 .move_snake:
@@ -170,6 +178,9 @@ reset:
 
   lda #1
   sta SNAKE_DIR
+
+  lda #DELAY_VAL
+  sta DELAY
 
   cli
 
