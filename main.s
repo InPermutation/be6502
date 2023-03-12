@@ -38,8 +38,24 @@ irq:
 .check_down:
   lda #JOY_DOWN
   and PORTA
-  bne .wait_delay ; TODO: up and left
+  bne .check_left
   lda #40
+  sta SNAKE_DIR
+  bra .wait_delay
+
+.check_left:
+  lda #JOY_LEFT
+  and PORTA
+  bne .check_up
+  lda #-1
+  sta SNAKE_DIR
+  bra .wait_delay
+
+.check_up:
+  lda #JOY_UP
+  and PORTA
+  bne .wait_delay
+  lda #-40
   sta SNAKE_DIR
   bra .wait_delay
 
