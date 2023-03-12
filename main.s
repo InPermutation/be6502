@@ -11,18 +11,45 @@ SNAKE_INIT_X = 20
 SNAKE_INIT_Y = 10
 HEAD = $50
 HEAD_HI = $51
+SNAKE_DIR = $52
+
+JOY_UP = 1
+JOY_DOWN = 2
+JOY_LEFT = 4
+JOY_RIGHT = 8
+JOY_TRIG = 16
 
 irq:
   pha
 
   lda VDP_REG ; read VDP status to clear 'F', the interrupt flag.
 
-  ; Move the snake to the right, and set the VDP address register
+  ; Check the joystick
+.check_right:
+  lda #JOY_RIGHT
+  and PORTA
+  bne .check_down
+  lda #1
+  sta SNAKE_DIR
+  bra .move_snake
+
+.check_down:
+  lda #JOY_DOWN
+  and PORTA
+  bne .move_snake  ; TODO: up and left
+  lda #40
+  sta SNAKE_DIR
+  bra .move_snake
+
+
+
+.move_snake:
+  ; Move the snake in the SNAKE_DIR
 
   ; Low byte
   clc
   lda HEAD
-  adc #1
+  adc SNAKE_DIR
   sta HEAD
 
   ; High byte
@@ -41,7 +68,7 @@ irq:
   cmp VDP_VRAM
   beq .continue
 
-  ; Game over - write an X and stop processing
+  ; Game over - write an X and wait for trigger, then restart
   lda HEAD
   sta VDP_REG
   lda HEAD_HI
@@ -49,7 +76,11 @@ irq:
   sta VDP_REG
   lda #'X'
   sta VDP_VRAM
-  stp
+.wait_for_trig:
+  lda #JOY_TRIG
+  and PORTA
+  bne .wait_for_trig
+  jmp reset
 
   ; Set up for a VRAM write to HEAD
 .continue:
@@ -63,6 +94,7 @@ irq:
   lda #SNAKE_PAT
   sta VDP_VRAM
 
+.exit:
   pla
 
   rti
@@ -135,6 +167,9 @@ reset:
 
   lda #>(VDP_NAME_TABLE_BASE + (SNAKE_INIT_Y * VDP_COLS) + SNAKE_INIT_X + 1)
   sta HEAD_HI
+
+  lda #1
+  sta SNAKE_DIR
 
   cli
 
