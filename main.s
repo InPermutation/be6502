@@ -12,7 +12,8 @@ SNAKE_INIT_Y = 10
 HEAD = $50
 HEAD_HI = $51
 SNAKE_DIR = $52
-DELAY = $53
+SNAKE_DIR_HI = $53
+DELAY = $54
 DELAY_VAL = 10
 
 JOY_UP = 1
@@ -33,6 +34,7 @@ irq:
   bne .check_down
   lda #1
   sta SNAKE_DIR
+  stz SNAKE_DIR_HI
   bra .wait_delay
 
 .check_down:
@@ -41,6 +43,7 @@ irq:
   bne .check_left
   lda #40
   sta SNAKE_DIR
+  stz SNAKE_DIR_HI
   bra .wait_delay
 
 .check_left:
@@ -49,6 +52,7 @@ irq:
   bne .check_up
   lda #-1
   sta SNAKE_DIR
+  sta SNAKE_DIR_HI
   bra .wait_delay
 
 .check_up:
@@ -57,6 +61,8 @@ irq:
   bne .wait_delay
   lda #-40
   sta SNAKE_DIR
+  lda #-1
+  sta SNAKE_DIR_HI
   bra .wait_delay
 
 .wait_delay
@@ -78,7 +84,7 @@ irq:
 
   ; High byte
   lda HEAD_HI
-  adc #0
+  adc SNAKE_DIR_HI
   sta HEAD_HI
 
   ; Set up for a VRAM read to HEAD
@@ -194,9 +200,13 @@ reset:
 
   lda #1
   sta SNAKE_DIR
+  stz SNAKE_DIR_HI
 
   lda #DELAY_VAL
   sta DELAY
+
+  lda #'H'
+  jsr putchar
 
   cli
 
