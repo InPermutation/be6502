@@ -14,6 +14,10 @@ HEAD_HI = $51
 SNAKE_DIR = $52
 SNAKE_DIR_HI = $53
 DELAY = $54
+RNG_SEED = $55
+EMPTY = $56
+EMPTY_HI = $57
+
 DELAY_VAL = 10
 
 JOY_UP = 1
@@ -94,23 +98,42 @@ irq:
   sta VDP_REG
 
   ; Compare with ASCII space character
-  lda #' '
-  cmp VDP_VRAM
+  lda VDP_VRAM
+  cmp #' '
   beq .continue
 
-  ; Game over - write an X and wait for trigger, then restart
-  lda HEAD
+  cmp #'*'
+  beq .eat_apple
+
+  jmp game_over
+
+.eat_apple:
+  jsr rand_8
+  sta EMPTY
+  jsr rand_8
+  and #3
+  sta EMPTY_HI
+  cmp #3
+  bne .valid_vaddr
+  lda EMPTY
+  cmp #$C0
+  bcs .eat_apple ; try again
+.valid_vaddr:
+  lda EMPTY
   sta VDP_REG
-  lda HEAD_HI
-  ORA #VDP_WRITE_VRAM_BIT
+  lda EMPTY_HI
   sta VDP_REG
-  lda #'X'
+  lda VDP_VRAM
+  cmp #' '
+  bne .eat_apple
+.empty_vaddr
+  lda EMPTY
+  sta VDP_REG
+  lda EMPTY_HI
+  ora #VDP_WRITE_VRAM_BIT
+  sta VDP_REG
+  lda #'*'
   sta VDP_VRAM
-.wait_for_trig:
-  lda #JOY_TRIG
-  and PORTA
-  bne .wait_for_trig
-  jmp reset
 
   ; Set up for a VRAM write to HEAD
 .continue:
@@ -208,11 +231,43 @@ reset:
   lda #'H'
   jsr putchar
 
+.seed_rng:
+  lda RNG_SEED
+  bne .already_seeded
+  lda #42
+  sta RNG_SEED
+.already_seeded:
+
   cli
 
 loop:
   wai
   bra loop
+
+rand_8:
+  lda RNG_SEED
+  asl
+  bcc .no_eor
+
+  eor #$CF
+.no_eor:
+  sta RNG_SEED
+  rts
+
+game_over:
+  ; Game over - write an X and wait for trigger, then restart
+  lda HEAD
+  sta VDP_REG
+  lda HEAD_HI
+  ORA #VDP_WRITE_VRAM_BIT
+  sta VDP_REG
+  lda #'X'
+  sta VDP_VRAM
+.wait_for_trig:
+  lda #JOY_TRIG
+  and PORTA
+  bne .wait_for_trig
+  jmp reset
 
 ; Vector locations
   .org $fffa
